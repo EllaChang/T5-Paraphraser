@@ -1,24 +1,16 @@
 import argparse
-import glob
 import os
-import json
-import time
 import logging
 import random
-import re
-from itertools import chain
-from string import punctuation
 
 import nltk
 nltk.download('punkt')
-from nltk.tokenize import sent_tokenize
 
 import pandas as pd
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 import pytorch_lightning as pl
-
 
 from transformers import (
     AdamW,
@@ -36,12 +28,10 @@ def set_seed(seed):
 
 set_seed(42)
 
-
 class T5FineTuner(pl.LightningModule):
     def __init__(self, hparams):
         super(T5FineTuner, self).__init__()
         self.hparams = hparams
-
         self.model = T5ForConditionalGeneration.from_pretrained(hparams.model_name_or_path)
         self.tokenizer = T5Tokenizer.from_pretrained(hparams.tokenizer_name_or_path)
 
@@ -114,16 +104,12 @@ class T5FineTuner(pl.LightningModule):
         return [optimizer]
 
     def optimizer_step(self, epoch, batch_idx, optimizer, optimizer_idx, second_order_closure=None):
-        if self.trainer.use_tpu:
-            xm.optimizer_step(optimizer)
-        else:
-            optimizer.step()
+        optimizer.step()
         optimizer.zero_grad()
         self.lr_scheduler.step()
 
     def get_tqdm_dict(self):
         tqdm_dict = {"loss": "{:.3f}".format(self.trainer.avg_loss), "lr": self.lr_scheduler.get_last_lr()[-1]}
-
         return tqdm_dict
 
     def train_dataloader(self):
@@ -201,7 +187,6 @@ print (train.head())
 
 tokenizer = T5Tokenizer.from_pretrained('t5-base')
 
-
 class ParaphraseDataset(Dataset):
     def __init__(self, tokenizer, data_dir, type_path, max_len=256):
         self.path = os.path.join(data_dir, type_path + '.csv')
@@ -238,11 +223,11 @@ class ParaphraseDataset(Dataset):
 
             # tokenize inputs
             tokenized_inputs = self.tokenizer.batch_encode_plus(
-                [input_], max_length=self.max_len, pad_to_max_length=True, return_tensors="pt"
+                [input_], truncation=True, max_length=self.max_len, pad_to_max_length=True, return_tensors="pt"
             )
             # tokenize targets
             tokenized_targets = self.tokenizer.batch_encode_plus(
-                [target], max_length=self.max_len, pad_to_max_length=True, return_tensors="pt"
+                [target], truncation=True, max_length=self.max_len, pad_to_max_length=True, return_tensors="pt"
             )
 
             self.inputs.append(tokenized_inputs)
