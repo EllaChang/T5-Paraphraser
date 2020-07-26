@@ -49,10 +49,10 @@ def mscoco_to_csv(sentence_sets, output_file_name):
     mscoco_csv: a csv file where each row contains paraphrases of one image
   """
   mscoco_data = {}
-  for i in range (0, 5):
+  for i in range (0, 2):
     mscoco_data["sentence" + str(i)] = [subset[i] for subset in sentence_sets]
   mscoco_df = pd.DataFrame(data=mscoco_data)
-  mscoco_csv = mscoco_df.to_csv(output_file_name)
+  mscoco_csv = mscoco_df.to_csv(output_file_name, index=False)
   return mscoco_csv
 
 train_sets = mscoco_read_json("paraphrase_data/mscoco/captions_train2017.json")

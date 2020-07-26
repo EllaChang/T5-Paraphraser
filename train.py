@@ -267,19 +267,22 @@ train_params = dict(
 def get_dataset(tokenizer, type_path, args):
   return ParaphraseDataset(tokenizer=tokenizer, data_dir=args.data_dir, type_path=type_path,  max_len=args.max_seq_length)
 
+def main():
+    print ("Initialize model")
+    model = T5FineTuner(args)
+    
+    trainer = pl.Trainer(**train_params)
+    
+    print (" Training model")
+    trainer.fit(model)
+    
+    print ("training finished")
+    
+    print ("Saving model")
+    model.model.save_pretrained('t5_paraphrase')
+    
+    print ("Saved model")
 
-
-print ("Initialize model")
-model = T5FineTuner(args)
-
-trainer = pl.Trainer(**train_params)
-
-print (" Training model")
-trainer.fit(model)
-
-print ("training finished")
-
-print ("Saving model")
-model.model.save_pretrained('t5_paraphrase')
-
-print ("Saved model")
+if __name__ == '__main__':
+    main()
+    torch.multiprocessing.freeze_support()
